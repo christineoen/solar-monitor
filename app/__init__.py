@@ -1,6 +1,7 @@
 from flask import Flask
 from app.database import init_db
 from app.weather import start_weather_thread
+from app.routes.data import data_bp
 
 
 def create_app():
@@ -9,6 +10,8 @@ def create_app():
     init_db()
     start_weather_thread()
 
-    # Route blueprints registered in later chunks
+    app.register_blueprint(data_bp)
+
+    # Remaining route blueprints registered in later chunks
 
     return app
