@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from app.database import init_db
 from app.weather import start_weather_thread
 from app.routes.data import data_bp
@@ -18,6 +18,8 @@ def create_app():
     app.register_blueprint(history_bp)
     app.register_blueprint(command_bp)
 
-    # Dashboard route registered in next chunk
+    @app.route('/')
+    def index():
+        return render_template('index.html')
 
     return app

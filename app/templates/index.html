@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solar Panel Monitor</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<header>
+  <h1>Solar Panel Monitor</h1>
+  <div class="status-indicator">
+    <div class="dot dot-red" id="status-dot"></div>
+    <span id="status-text">Disconnected</span>
+  </div>
+</header>
+
+<main>
+  <div class="banner banner-error" id="disconnected-banner">
+    ESP32 not connected — no sensor data is being received.
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-label">Power</div>
+      <div><span class="card-value" id="val-power">—</span><span class="card-unit">mW</span></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Voltage</div>
+      <div><span class="card-value" id="val-voltage">—</span><span class="card-unit">V</span></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Current</div>
+      <div><span class="card-value" id="val-current">—</span><span class="card-unit">mA</span></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Efficiency</div>
+      <div><span class="card-value" id="val-efficiency">—</span><span class="card-unit">%</span></div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <canvas id="chart"></canvas>
+  </div>
+
+  <div class="alert-banner" id="alert-banner">
+    <p>Panel output is below expected for current conditions. Panel may need cleaning.</p>
+    <div class="alert-buttons">
+      <button class="btn-primary" id="btn-clean" onclick="sendCommand('clean')">Move to cleaning position</button>
+      <button class="btn-secondary" onclick="sendCommand('reset')">Done cleaning</button>
+    </div>
+  </div>
+</main>
+
+<script src="/static/dashboard.js?v=4"></script>
+
+</body>
+</html>

@@ -101,8 +101,8 @@ Top right corner. Show:
 
 ## Notes
 
-- All JS should be inline in the HTML file — no separate .js files
-- All CSS should be inline in a `<style>` tag — no separate .css files
+- JavaScript lives in `app/static/dashboard.js` — loaded via `<script src="/static/dashboard.js">` at the bottom of the body
+- CSS lives in `app/static/styles.css` — loaded via `<link rel="stylesheet">` in the `<head>`
 - Use a clean, minimal design with a dark header bar and white card panels
 - The page should work on both desktop and a tablet-sized screen
 - Do not use any JS framework (no React, Vue, etc.)

@@ -1,0 +1,67 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #f8fafc; color: #1e293b; }
+
+header {
+  background: #1e293b;
+  color: white;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+header h1 { font-size: 1.25rem; font-weight: 600; }
+
+.status-indicator { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot-green { background: #22c55e; }
+.dot-red { background: #ef4444; }
+
+main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+.banner {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  display: none;
+}
+.banner-error {
+  background: #fee2e2;
+  border: 1px solid #ef4444;
+  color: #991b1b;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+@media (max-width: 768px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+
+.card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.card-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 8px; }
+.card-value { font-size: 2rem; font-weight: 700; }
+.card-unit { font-size: 0.875rem; color: #64748b; margin-left: 4px; }
+
+.chart-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  margin-bottom: 24px;
+}
+
+.alert-banner {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: none;
+}
+.alert-banner p { color: #92400e; margin-bottom: 12px; }
+.alert-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+
+button { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; }
+.btn-primary { background: #1e293b; color: white; }
+.btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+.btn-secondary { background: white; color: #1e293b; border: 1px solid #cbd5e1; }
