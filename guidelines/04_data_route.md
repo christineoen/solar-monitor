@@ -2,7 +2,7 @@
 
 ## What to build
 
-The endpoint the ESP32 calls every 500ms to deliver sensor readings. This is the main ingestion point for all hardware data.
+The endpoint the ESP32 calls every minute to deliver sensor readings. This is the main ingestion point for all hardware data.
 
 ## Route
 

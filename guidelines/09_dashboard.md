@@ -26,9 +26,9 @@ A single-page dashboard served at `GET /` as `app/templates/index.html`. No fron
 
 ## Live data polling
 
-Poll `GET /status` every 1000ms using `setInterval` and `fetch`. Update all stat cards on each response.
+Poll `GET /status` every 60000ms using `setInterval` and `fetch`. Update all stat cards on each response.
 
-Show a disconnected warning banner if `last_esp32_contact` is greater than 5 seconds or is `null`.
+Show a disconnected warning banner if `last_esp32_contact` is greater than 90 seconds or is `null`.
 
 ## Chart
 
@@ -87,8 +87,8 @@ The alert banner will disappear on the next status poll once Flask confirms `ale
 ## Status indicator
 
 Top right corner. Show:
-- Green dot + "Connected" when `last_esp32_contact` < 5 seconds
-- Red dot + "Disconnected" when `last_esp32_contact` >= 5 seconds or is null
+- Green dot + "Connected" when `last_esp32_contact` < 90 seconds
+- Red dot + "Disconnected" when `last_esp32_contact` >= 90 seconds or is null
 
 ## Stat cards
 

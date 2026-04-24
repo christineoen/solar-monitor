@@ -2,7 +2,7 @@
 
 ## What this project is
 
-An IoT solar panel monitoring system. A FireBeetle ESP32-E reads power output from a Gravity I2C Digital Wattmeter every 500ms and POSTs the data to a locally hosted Flask server. Flask compares actual output against expected output derived from live solar irradiance forecast data (Open-Meteo API) and alerts the user when performance is significantly below expectations, indicating a dirty panel or obstruction. The user can then issue a cleaning command from the dashboard, which moves two SG90 servo motors to reposition the panel to a cleaning angle.
+An IoT solar panel monitoring system. A FireBeetle ESP32-E reads power output from a Gravity I2C Digital Wattmeter every minute and POSTs the data to a locally hosted Flask server. Flask compares actual output against expected output derived from live solar irradiance forecast data (Open-Meteo API) and alerts the user when performance is significantly below expectations, indicating a dirty panel or obstruction. The user can then issue a cleaning command from the dashboard, which moves two SG90 servo motors to reposition the panel to a cleaning angle.
 
 ## Repo structure
 
@@ -51,13 +51,13 @@ ALERT_DURATION_SECS = 300       # Must be below threshold for 5 mins before aler
 CLEANING_ANGLE      = 45        # Servo degrees for cleaning position (empirically determined)
 NORMAL_ANGLE        = 90        # Servo resting position
 WEATHER_POLL_SECS   = 3600      # Fetch Open-Meteo once per hour
-SENSOR_POLL_MS      = 500       # ESP32 POST interval (firmware side, for reference)
+SENSOR_POLL_MS      = 60000     # ESP32 POST interval (firmware side, for reference)
 ```
 
 ## Communication overview
 
-- **ESP32 → Flask:** HTTP POST `/data` every 500ms with JSON sensor payload
+- **ESP32 → Flask:** HTTP POST `/data` every minute with JSON sensor payload
 - **Flask → ESP32:** JSON response body with `{ "command": "none" | "clean" | "reset" }`
-- **Browser → Flask:** GET `/status` every 1s for live data; GET `/history/sensor` and `/history/weather` for graph data; POST `/command` for user actions
+- **Browser → Flask:** GET `/status` every 1 minute for live data; GET `/history/sensor` and `/history/weather` for graph data; POST `/command` for user actions
 - **Flask → Open-Meteo:** GET request once per hour, result stored in SQLite and in-memory state
 - **Flask → SQLite:** Every sensor reading and every weather fetch is persisted
