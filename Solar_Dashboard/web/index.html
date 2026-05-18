@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solar Tracker Dashboard</title>
+  <link rel="stylesheet" href="static/styles.css?v=acs5-zero-progress-15s">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <div>
+    <p class="eyebrow">CITS5506 IoT Prototype</p>
+    <h1>Solar Tracker Dashboard</h1>
+  </div>
+  <div class="status-pill" id="connection-pill">
+    <span class="dot dot-red" id="status-dot"></span>
+    <span id="status-text">Disconnected</span>
+  </div>
+</header>
+
+<main class="shell">
+  <section class="banner banner-error" id="disconnected-banner">
+    <strong>ESP32 disconnected.</strong>
+    <span id="last-contact-text">No sensor data has been received yet.</span>
+  </section>
+
+  <section class="banner banner-warning" id="alert-banner">
+    <div>
+      <strong>Low power alert.</strong>
+      <span>Panel output is below the expected or observed baseline.</span>
+    </div>
+    <div class="banner-actions">
+      <button class="btn btn-warning" id="btn-clean-alert" type="button">Cleaning Position</button>
+    </div>
+  </section>
+
+  <section class="dashboard-layout">
+    <article class="panel status-panel">
+      <div class="panel-header">
+        <div class="section-title">
+          <span class="title-icon"><img src="static/icons/status.svg" alt=""></span>
+          <div>
+            <h2>Current Status</h2>
+            <p>Live panel readings</p>
+          </div>
+        </div>
+        <span class="soft-badge" id="val-mode">--</span>
+      </div>
+
+      <div class="status-overview">
+        <div class="status-visual" aria-hidden="true">
+          <img id="status-board-image" src="figure/Fig_board_good.png" alt="">
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric-card metric-primary">
+            <span class="metric-icon"><img src="static/icons/power.svg" alt=""></span>
+            <span class="metric-label">Power</span>
+            <div><span class="metric-value" id="val-power">--</span><span class="metric-unit">mW</span></div>
+          </div>
+          <div class="metric-card">
+            <span class="metric-icon"><img src="static/icons/voltage.svg" alt=""></span>
+            <span class="metric-label">Voltage</span>
+            <div><span class="metric-value" id="val-voltage">--</span><span class="metric-unit">V</span></div>
+          </div>
+          <div class="metric-card">
+            <span class="metric-icon"><img src="static/icons/current.svg" alt=""></span>
+            <span class="metric-label">Current</span>
+            <div><span class="metric-value" id="val-current">--</span><span class="metric-unit">mA</span></div>
+          </div>
+          <div class="metric-card">
+            <span class="metric-icon"><img src="static/icons/ratio.svg" alt=""></span>
+            <span class="metric-label">Output Ratio</span>
+            <div><span class="metric-value" id="val-efficiency">--</span><span class="metric-unit" id="val-efficiency-unit"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <dl class="state-strip">
+        <div>
+          <dt><img src="static/icons/pan.svg" alt="">Pan</dt>
+          <dd><span id="state-pan">--</span> deg</dd>
+        </div>
+        <div>
+          <dt><img src="static/icons/tilt.svg" alt="">Tilt</dt>
+          <dd><span id="state-tilt">--</span> deg</dd>
+        </div>
+        <div>
+          <dt><img src="static/icons/best.svg" alt="">Best Today</dt>
+          <dd><span id="val-max-power">--</span> mW</dd>
+        </div>
+        <div>
+          <dt><img src="static/icons/meter.svg" alt="">Wattmeter</dt>
+          <dd id="state-wattmeter">--</dd>
+        </div>
+      </dl>
+    </article>
+
+    <article class="panel analysis-panel">
+      <div class="panel-header">
+        <div class="section-title">
+          <span class="title-icon title-icon-overview"><img src="static/icons/overview.svg" alt=""></span>
+          <div>
+            <h2>Overview</h2>
+          </div>
+        </div>
+        <div class="weather-actions">
+          <label for="weather-location-select">Location</label>
+          <select id="weather-location-select">
+            <option value="perth">Perth</option>
+          </select>
+          <span class="risk-badge risk-neutral" id="risk-badge">No data</span>
+        </div>
+      </div>
+
+      <div class="weather-summary-row">
+        <div class="weather-summary-card weather-card-main">
+          <span class="summary-label">Weather</span>
+          <div class="weather-card-body">
+            <img id="weather-image" src="figure/clear_transparent.png" alt="Current weather">
+            <div class="weather-card-copy">
+            <strong class="weather-condition-name" id="state-weather-condition">--</strong>
+            <small id="weather-location-summary">Perth</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="weather-summary-card output-summary-card">
+          <span class="summary-label">Output Ratio</span>
+          <strong class="summary-value output-ratio-value" id="analysis-ratio-display">--</strong>
+          <div class="summary-pair">
+            <span>Actual <b><span id="analysis-actual">--</span> mW</b></span>
+            <span>Expected <b><span id="analysis-expected">--</span> mW</b></span>
+          </div>
+        </div>
+
+        <div class="weather-summary-card time-summary-card">
+          <span class="summary-label">Local Time</span>
+          <strong class="summary-value" id="state-local-time">--</strong>
+          <small id="state-sunlight-summary">--</small>
+        </div>
+
+        <div class="weather-summary-card status-summary-card status-neutral" id="status-summary-card">
+          <span class="summary-label">Status</span>
+          <strong class="summary-value" id="risk-summary">No data</strong>
+          <small id="analysis-title">No comparison yet.</small>
+          <small id="analysis-detail">Waiting for irradiance and power data.</small>
+        </div>
+      </div>
+
+      <div class="weather-grid">
+        <div>
+          <span>Location</span>
+          <strong id="state-weather-location">Perth</strong>
+        </div>
+        <div>
+          <span>Temperature</span>
+          <strong><span class="weather-value" id="val-temperature">--</span><span class="weather-unit"> C</span></strong>
+        </div>
+        <div>
+          <span>Cloud Cover</span>
+          <strong><span class="weather-value" id="val-cloud">--</span><span class="weather-unit">%</span></strong>
+        </div>
+        <div>
+          <span>Wind Speed</span>
+          <strong><span class="weather-value" id="val-wind">--</span><span class="weather-unit"> km/h</span></strong>
+        </div>
+        <div>
+          <span>Irradiance</span>
+          <strong><span class="weather-value" id="val-irradiance">--</span><span class="weather-unit"> W/m2</span></strong>
+        </div>
+        <div>
+          <span>Sunlight</span>
+          <strong id="state-sunlight">--</strong>
+        </div>
+        <div>
+          <span>Expected</span>
+          <strong><span class="weather-value" id="val-expected">--</span><span class="weather-unit"> mW</span></strong>
+        </div>
+        <div>
+          <span>Weather Update</span>
+          <strong id="state-weather">--</strong>
+        </div>
+        <div>
+          <span>Source</span>
+          <strong id="weather-source">--</strong>
+        </div>
+      </div>
+    </article>
+
+    <article class="panel history-panel">
+      <div class="panel-header">
+        <div class="section-title">
+          <span class="title-icon"><img src="static/icons/best.svg" alt=""></span>
+          <div>
+            <h2>Power History</h2>
+            <p id="chart-subtitle">Last 5 minutes</p>
+          </div>
+        </div>
+        <div class="history-actions" role="group" aria-label="History range">
+          <button class="range-btn active" type="button" data-range="5m">5 min</button>
+          <button class="range-btn" type="button" data-range="60m">60 min</button>
+          <button class="range-btn" type="button" data-range="6h">6 h</button>
+          <button class="range-btn" type="button" data-range="24h">24 h</button>
+          <button class="range-btn history-clear-btn" id="btn-clear-history" type="button" data-confirm="false">Clear</button>
+        </div>
+      </div>
+      <div class="chart-meta">
+        <span class="soft-badge" id="chart-count">0 readings</span>
+        <div class="chart-legend" aria-label="Chart legend">
+          <span class="legend-pill legend-power">
+            <i class="legend-line legend-line-solid"></i>
+            Actual Power
+          </span>
+          <span class="legend-pill legend-power">
+            <i class="legend-line legend-line-dashed"></i>
+            Theoretical Output
+          </span>
+          <span class="legend-pill legend-efficiency">
+            <i class="legend-dot"></i>
+            Efficiency (%)
+          </span>
+        </div>
+      </div>
+      <div class="history-tools">
+        <div class="history-zero-card">
+          <span class="dot dot-red" id="sensor-zero-dot"></span>
+          <div class="history-zero-copy">
+            <span>Sensor Zero</span>
+            <strong id="sensor-zero-state">Ready</strong>
+            <p id="sensor-zero-detail">Cover the panel, then calibrate the current baseline.</p>
+            <div class="sensor-zero-progress" id="sensor-zero-progress" hidden>
+              <div class="sensor-zero-track"><span id="sensor-zero-progress-fill"></span></div>
+              <strong id="sensor-zero-progress-text">0%</strong>
+            </div>
+          </div>
+          <button class="btn btn-primary" id="btn-sensor-zero" type="button">Calibrate Zero</button>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="chart"></canvas>
+        <div class="chart-empty" id="chart-empty">Waiting for sensor history</div>
+      </div>
+    </article>
+
+    <article class="panel control-panel" id="panel-control">
+      <div class="panel-header">
+        <div class="section-title">
+          <span class="title-icon"><img src="static/icons/tilt.svg" alt=""></span>
+          <div>
+            <h2>Panel Control</h2>
+            <p id="command-status">No command queued</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-angle-readout" aria-label="Live panel angle">
+        <div class="angle-readout-main">
+          <span class="angle-readout-label">Realtime Angle</span>
+          <div class="angle-readout-values">
+            <strong>Pan <b><span id="control-pan-display">--</span> deg</b></strong>
+            <strong>Tilt <b><span id="control-tilt-display">--</span> deg</b></strong>
+          </div>
+        </div>
+        <p id="control-angle-detail">Waiting for ESP32 angle data.</p>
+      </div>
+
+      <div class="control-actions">
+        <button class="btn btn-primary" id="btn-auto" type="button">Auto</button>
+        <button class="btn btn-secondary" id="btn-manual-mode" type="button">Manual</button>
+        <button class="btn btn-warning" id="btn-clean-main" type="button">Clean</button>
+      </div>
+
+      <div class="sim-upload-status ldr-tracking-status panel-tracking-control control-mode-card" id="auto-control-card">
+        <span class="dot dot-red" id="ldr-tracking-dot"></span>
+        <div>
+          <span>Light Tracking</span>
+          <strong id="ldr-tracking-state">Disabled</strong>
+          <p id="ldr-tracking-detail">Auto mode uses the time trajectory unless this is enabled.</p>
+        </div>
+        <div class="ldr-schedule-control">
+          <label for="ldr-tracking-period">Tracking interval</label>
+          <div class="ldr-schedule-row">
+            <input id="ldr-tracking-period" type="number" min="0" max="86400" step="1" value="0">
+            <select id="ldr-tracking-unit" aria-label="Tracking interval unit">
+              <option value="s">s</option>
+              <option value="min">min</option>
+              <option value="h">h</option>
+            </select>
+            <button class="btn btn-secondary" id="btn-ldr-schedule" type="button">Apply</button>
+          </div>
+          <p>0 = continuous. Max interval is 24h.</p>
+        </div>
+        <button class="btn btn-primary" id="btn-ldr-tracking" type="button" data-enabled="false">Enable LDR Tracking</button>
+      </div>
+
+      <div class="manual-control-card control-mode-card" id="manual-control-card" hidden>
+        <div class="tilt-clear-head">
+          <div>
+            <h3>Manual Angle</h3>
+            <p>Set pan and tilt, then apply the angle to ESP32.</p>
+          </div>
+        </div>
+        <div class="sliders">
+          <label class="slider-row" for="pan-slider">
+            <span>Pan</span>
+            <input id="pan-slider" type="range" min="0" max="180" value="90">
+            <output id="pan-output" for="pan-slider">90 deg</output>
+          </label>
+          <label class="slider-row" for="tilt-slider">
+            <span>Tilt</span>
+            <input id="tilt-slider" type="range" min="0" max="180" value="45">
+            <output id="tilt-output" for="tilt-slider">45 deg</output>
+          </label>
+          <button class="btn btn-primary wide-btn" id="btn-manual" type="button">Apply Manual Angle</button>
+        </div>
+      </div>
+
+      <div class="tilt-clear" id="tilt-clear-card" hidden>
+        <div class="tilt-clear-head">
+          <div>
+            <h3>Tilt Clear Mode</h3>
+            <p>Moves the panel to 180 deg, then waits for manual reset.</p>
+          </div>
+          <button class="btn btn-danger" id="btn-tilt-clear" type="button" data-action="start">Start</button>
+        </div>
+
+        <div class="progress-stack" id="tilt-progress-panel">
+          <div class="progress-row">
+            <div class="progress-label">
+              <span id="tilt-phase-one-label">Tilting</span>
+              <strong id="tilt-phase-one-percent">0%</strong>
+            </div>
+            <div class="progress-track"><span id="tilt-phase-one-fill"></span></div>
+          </div>
+          <div class="progress-row">
+            <div class="progress-label">
+              <span id="tilt-phase-two-label">Reset</span>
+              <strong id="tilt-phase-two-percent">0%</strong>
+            </div>
+            <div class="progress-track"><span id="tilt-phase-two-fill"></span></div>
+          </div>
+          <p class="progress-note" id="tilt-progress-note">Ready.</p>
+        </div>
+      </div>
+
+      <dl class="state-strip control-state">
+        <div>
+          <dt>Time Sync</dt>
+          <dd id="state-time">--</dd>
+        </div>
+        <div>
+          <dt>Pending</dt>
+          <dd id="state-command">none</dd>
+        </div>
+      </dl>
+    </article>
+  </section>
+
+  <article class="panel dev-panel" id="dev-panel">
+    <div class="panel-header dev-panel-toggle" id="dev-panel-toggle" role="button" tabindex="0" aria-expanded="false" aria-controls="dev-tools-body">
+      <div class="section-title">
+        <span class="title-icon"><img src="static/icons/meter.svg" alt=""></span>
+        <div>
+          <h2>Developer Tools</h2>
+          <p>Click to show upload tools and direct packets</p>
+        </div>
+      </div>
+      <div class="dev-toggle-actions">
+        <span class="soft-badge" id="dev-status">Checking</span>
+        <button class="btn btn-secondary btn-dev-toggle" id="btn-dev-toggle" type="button">Show</button>
+      </div>
+    </div>
+
+    <div class="dev-tools-grid" id="dev-tools-body" hidden>
+      <div class="sim-upload-status sim-upload-card">
+        <span class="dot dot-red" id="sim-upload-dot"></span>
+        <div>
+          <span>Simulator Upload</span>
+          <strong id="sim-upload-state">Checking...</strong>
+          <p id="sim-upload-detail">The generator process is controlled from this panel.</p>
+        </div>
+        <div class="sim-model-controls">
+          <label>
+            <span>Efficiency</span>
+            <select id="sim-efficiency-profile">
+              <option value="high">High 80-90%</option>
+              <option value="medium" selected>Medium 50-80%</option>
+              <option value="low">Low 25-50%</option>
+            </select>
+          </label>
+          <label>
+            <span>Fluctuation</span>
+            <select id="sim-variation-profile">
+              <option value="low">Small</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">Large</option>
+            </select>
+          </label>
+        </div>
+        <button class="btn btn-primary" id="btn-sim-upload" type="button" data-enabled="false">Start Upload</button>
+      </div>
+
+      <div class="esp32-upload-card">
+        <div class="esp32-upload-head">
+          <span class="dot dot-red" id="esp32-upload-dot"></span>
+          <div>
+            <span>ESP32 Direct Upload</span>
+            <strong id="esp32-upload-state">No direct data</strong>
+            <p id="esp32-upload-detail">Waiting for ESP32 upload to Supabase.</p>
+          </div>
+        </div>
+        <dl class="esp32-data-grid">
+          <div>
+            <dt>Voltage</dt>
+            <dd><span id="esp32-voltage">--</span> V</dd>
+          </div>
+          <div>
+            <dt>Current</dt>
+            <dd><span id="esp32-current">--</span> mA</dd>
+          </div>
+          <div>
+            <dt>Power</dt>
+            <dd><span id="esp32-power">--</span> mW</dd>
+          </div>
+          <div>
+            <dt>Raw Meter</dt>
+            <dd><span id="esp32-raw-meter">--</span> V</dd>
+          </div>
+          <div>
+            <dt>Current Base</dt>
+            <dd id="esp32-zero-base">--</dd>
+          </div>
+          <div>
+            <dt>Pan / Tilt</dt>
+            <dd><span id="esp32-angles">--</span></dd>
+          </div>
+          <div>
+            <dt>Database</dt>
+            <dd id="esp32-supabase-status">--</dd>
+          </div>
+          <div>
+            <dt>Mode</dt>
+            <dd id="esp32-mode">--</dd>
+          </div>
+          <div>
+            <dt>LDR Diff</dt>
+            <dd id="esp32-ldr-diff">--</dd>
+          </div>
+          <div>
+            <dt>LDR Raw</dt>
+            <dd id="esp32-ldr-raw">--</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </article>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="static/dashboard.js?v=dev-collapse-sim-models"></script>
+
+</body>
+</html>
